@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | Secure Access</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* Background with gradient */
+    body {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* Glassmorphism Login Box */
+    .login-box {
+      width: 400px;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+      border-radius: 15px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* Title Styling with Animation */
+    .login-box h2 {
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #00aaff;
+      animation: welcomeAnimation 2s ease-in-out infinite;
+    }
+
+    /* Define the animation */
+    @keyframes welcomeAnimation {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* Input Fields with Neon Effect */
+    .form-control {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      height: 50px;
+      color: #fff !important;  /* ✅ Ensures text is always white */
+      font-size: 16px;
+      border-radius: 10px;
+      transition: all 0.3s ease-in-out;
+      box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.1);
+    }
+
+    .form-control::placeholder {
+      color: rgba(255, 255, 255, 0.6) !important; /* ✅ Placeholder remains light gray */
+    }
+
+    .form-control:focus {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid #00aaff;
+      box-shadow: 0 0 12px #00aaff;
+      outline: none;
+      color: #fff !important;  /* ✅ Ensures text remains white even on focus */
+    }
+
+    /* 3D Animated Button */
+    .btn-primary {
+      background: linear-gradient(90deg, #00aaff, #0077ff);
+      border: none;
+      height: 50px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 12px;
+      transition: all 0.3s ease-in-out;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 300%;
+      height: 300%;
+      background: rgba(255, 255, 255, 0.1);
+      transition: all 0.5s ease-in-out;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+    }
+
+    .btn-primary:hover::before {
+      width: 0;
+      height: 0;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(90deg, #0077ff, #00aaff);
+      box-shadow: 0 4px 15px rgba(0, 170, 255, 0.5);
+    }
+
+    /* Responsive */
+    @media (max-width: 450px) {
+      .login-box {
+        width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h2>Welcome</h2>
+    <form id="login-form">
+      <div class="mb-3">
+        <input type="text" class="form-control" id="username" placeholder="Username" required>
+      </div>
+      <div class="mb-3">
+        <input type="password" class="form-control" id="password" placeholder="Password" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Login</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById("login-form").addEventListener("submit", function(event) {
+      event.preventDefault();
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: username, password: password }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          window.location.href = "/";
+        } else {
+          alert("Invalid username or password");
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+      });
+    });
+  </script>
+</body>
+</html>

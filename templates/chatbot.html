@@ -1,0 +1,225 @@
+<!-- Chatbot Icon -->
+<div id="chatbot-icon" class="chatbot-icon">
+    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" alt="Chatbot Icon" width="40" height="40">
+  </div>
+  
+  <!-- Chatbot Box -->
+  <div id="chatbot-box" class="chatbot-box">
+    <div class="chatbot-header">
+      Compliance Chatbot
+      <span id="chatbot-close" class="chatbot-close">&times;</span>
+    </div>
+    <div id="chatbot-body" class="chatbot-body">
+      <!-- Chat messages will go here -->
+    </div>
+    <div class="chatbot-input-area">
+      <input type="text" class="form-control" id="chatbot-input" placeholder="Type a message...">
+      <button class="btn btn-primary" id="chatbot-send">Send</button>
+    </div>
+  </div>
+  
+  <style>
+    /* Chatbot Icon Styling */
+    .chatbot-icon {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      cursor: pointer;
+      z-index: 1000;
+      background-color: #0d6efd; /* Original chatbot icon color */
+      border-radius: 50%;
+      padding: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease;
+    }
+  
+    .chatbot-icon:hover {
+      transform: scale(1.1);
+    }
+  
+    /* Chatbot Box Styling (Initially Hidden) */
+    .chatbot-box {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 350px;
+      height: 450px;
+      background-color: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 15px;
+      overflow: hidden;
+      z-index: 1000;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      font-family: 'Arial', sans-serif;
+      display: none; /* Initially hidden */
+    }
+  
+    /* Chatbot Header */
+    .chatbot-header {
+      background-color: #004b6b; /* Original chatbot header color */
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 18px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  
+    /* Chatbot Close Button */
+    .chatbot-close {
+      cursor: pointer;
+      font-size: 24px;
+      color: white;
+    }
+  
+    .chatbot-close:hover {
+      color: #ff4d4d;
+    }
+  
+    /* Chatbot Body (Message Area) */
+    .chatbot-body {
+      padding: 10px;
+      height: 320px;
+      overflow-y: auto;
+      background-color: #f9f9f9;
+    }
+  
+    /* Chatbot Input Area */
+    .chatbot-input-area {
+      padding: 10px;
+      background-color: #f1f1f1;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      gap: 10px;
+    }
+  
+    /* Input Field */
+    #chatbot-input {
+      border: 1px solid #e0e0e0;
+      border-radius: 20px;
+      padding: 10px;
+      font-size: 14px;
+      flex: 1;
+    }
+  
+    /* Send Button */
+    #chatbot-send {
+      border-radius: 20px;
+      padding: 10px 20px;
+      font-size: 14px;
+      background-color: #004b6b; /* Original chatbot send button color */
+      border: none;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+  
+    #chatbot-send:hover {
+      background-color: #00334d; /* Darker blue on hover */
+    }
+  
+    /* Chat Messages Styling */
+    #chatbot-body div {
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+  
+    /* User Messages */
+    #chatbot-body div[style*="text-align: right"] {
+      background-color: #004b6b; /* Original user message color */
+      color: white;
+      margin-left: auto;
+      border-bottom-right-radius: 5px;
+    }
+  
+    /* Bot Messages */
+    #chatbot-body div[style*="text-align: left"] {
+      background-color: #e9ecef; /* Original bot message color */
+      color: black;
+      margin-right: auto;
+      border-bottom-left-radius: 5px;
+    }
+  </style>
+  
+  <script>
+    // Toggle Chatbot Visibility
+    const chatbotIcon = document.getElementById("chatbot-icon");
+    const chatbotBox = document.getElementById("chatbot-box");
+    const chatbotClose = document.getElementById("chatbot-close");
+  
+    chatbotIcon.addEventListener("click", () => {
+      chatbotBox.style.display = "block";
+      chatbotIcon.style.display = "none";
+    });
+  
+    chatbotClose.addEventListener("click", () => {
+      chatbotBox.style.display = "none";
+      chatbotIcon.style.display = "block";
+    });
+  
+    // Chatbot Send Message Logic
+    document.getElementById("chatbot-send").addEventListener("click", function() {
+      let inputField = document.getElementById("chatbot-input");
+      let message = inputField.value.trim();
+  
+      if (message !== "") {
+        let chatBody = document.getElementById("chatbot-body");
+  
+        // Display user message
+        displayMessage(message, "user");
+  
+        // Send user message to the Flask backend
+        fetch("/api/chatbot", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: message }),
+        })
+        .then(response => response.json())
+        .then(data => {
+          // Display chatbot reply
+          displayMessage(data.reply, "bot");
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          displayMessage("Oops! Something went wrong.", "bot");
+        });
+  
+        // Clear input field
+        inputField.value = "";
+      }
+    });
+  
+    // Function to display messages in the chat window
+    function displayMessage(text, sender) {
+      let chatBody = document.getElementById("chatbot-body");
+      let messageDiv = document.createElement("div");
+      messageDiv.textContent = text;
+  
+      // Apply different styles for user and bot messages
+      if (sender === "user") {
+        messageDiv.style.padding = "10px";
+        messageDiv.style.background = "#004b6b";
+        messageDiv.style.color = "white";
+        messageDiv.style.borderRadius = "10px";
+        messageDiv.style.marginBottom = "10px";
+        messageDiv.style.textAlign = "right";
+      } else {
+        messageDiv.style.padding = "10px";
+        messageDiv.style.background = "#e9ecef";
+        messageDiv.style.color = "black";
+        messageDiv.style.borderRadius = "10px";
+        messageDiv.style.marginBottom = "10px";
+        messageDiv.style.textAlign = "left";
+      }
+  
+      chatBody.appendChild(messageDiv);
+      chatBody.scrollTop = chatBody.scrollHeight; // Auto-scroll to latest message
+    }
+  </script>
+  
