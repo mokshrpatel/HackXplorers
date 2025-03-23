@@ -1,0 +1,71 @@
+      <!-- Transactions -->
+      <div class="col-md-4 mb-4">
+        <div class="card p-3">
+          <h5>Transactions</h5>
+          <input type="text" class="form-control mb-2" id="filter-transactions" placeholder="Search">
+          <!-- Scrollable Section -->
+          <div class="scrollable-table">
+            <table class="table table-bordered table-sm">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Description</th>
+                  <th>Risk</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="transaction-table-body">
+                {% for row in rows %}
+                <tr>
+                  <td>{{row['transaction_id']}}</td>
+                  <td>{{row['date']}}</td>
+                  <td>{{row['amount']}}</td>
+                  <td>{{row['description']}}</td>
+                  <td>{{row['risk']}}</td>
+                  <td>{{row['status']}}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <!-- End Scrollable Section -->
+
+        </div>
+      </div>
+      <script>
+        // Function to filter transactions
+        function filterTransactions() {
+          const filterInput = document.getElementById('filter-transactions');
+          const filterValue = filterInput.value.toLowerCase(); // Get the search query in lowercase
+          const tableBody = document.getElementById('transaction-table-body');
+          const rows = tableBody.getElementsByTagName('tr'); // Get all rows in the table
+      
+          // Loop through all rows
+          for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            const cells = row.getElementsByTagName('td'); // Get all cells in the row
+            let match = false;
+      
+            // Loop through all cells in the row
+            for (let j = 0; j < cells.length; j++) {
+              const cellText = cells[j].textContent.toLowerCase(); // Get cell text in lowercase
+              if (cellText.includes(filterValue)) { // Check if cell text matches the search query
+                match = true;
+                break; // Stop checking other cells if a match is found
+              }
+            }
+      
+            // Show or hide the row based on whether it matches the search query
+            if (match) {
+              row.style.display = ''; // Show the row
+            } else {
+              row.style.display = 'none'; // Hide the row
+            }
+          }
+        }
+      
+        // Add event listener to the filter input
+        document.getElementById('filter-transactions').addEventListener('input', filterTransactions);
+      </script>

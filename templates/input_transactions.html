@@ -1,0 +1,67 @@
+<!-- Add Transaction -->
+<div class="col-md-4 mb-4">
+    <div class="card p-3">
+      <h5>Add Transaction</h5>
+      <form id="add-transaction-form">
+        <input type="text" class="form-control mb-2" id="transaction-id" placeholder="Transaction ID (e.g., TX2000)" required>
+        <input type="date" class="form-control mb-2" id="transaction-date" required>
+        <input type="number" class="form-control mb-2" id="transaction-amount" placeholder="Amount" required>
+        <input type="text" class="form-control mb-2" id="transaction-description" placeholder="Description" required>
+        <select class="form-control mb-2" id="transaction-risk" required>
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+        </select>
+        <select class="form-control mb-3" id="transaction-status" required>
+          <option value="Approved">Approved</option>
+          <option value="Pending">Pending</option>
+          <option value="Rejected">Rejected</option>
+        </select>
+        <button type="submit" class="btn btn-primary w-100">Add Transaction</button>
+      </form>
+    </div>
+  </div>
+  <script>
+    // Handle form submission for adding a transaction
+    document.getElementById('add-transaction-form').addEventListener('submit', function (event) {
+  event.preventDefault(); // Prevent the default form submission
+
+  // Collect form data
+  const transactionData = {
+    transaction_id: document.getElementById('transaction-id').value,
+    date: document.getElementById('transaction-date').value,
+    amount: parseFloat(document.getElementById('transaction-amount').value), // Ensure amount is a number
+    description: document.getElementById('transaction-description').value,
+    risk: document.getElementById('transaction-risk').value,
+    status: document.getElementById('transaction-status').value,
+  };
+
+  // Send data to the backend
+  fetch('/api/add-transaction', {  // Ensure this matches the backend route
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(transactionData),
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.success) {
+        alert('Transaction added successfully!');
+        window.location.reload(); // Reload the page to reflect the new transaction
+      } else {
+        alert('Failed to add transaction: ' + data.error);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('An error occurred while adding the transaction.');
+    });
+});  
+
+</script>
