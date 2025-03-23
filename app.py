@@ -146,6 +146,40 @@ def chatbot_reply():
     return jsonify({"reply": bot_reply})
 
 
+
+# -------------------- Add transactions --------------------
+
+@app.route("/api/add-transaction", methods=["POST"])
+def add_transaction():
+    data = request.json
+    transaction_id = data.get("transaction_id")
+    date = data.get("date")
+    amount = data.get("amount")
+    description = data.get("description")
+    risk = data.get("risk")
+    status = data.get("status")
+
+    try:
+        with engine.connect() as conn:
+            # Insert the new transaction into the database
+            conn.execute(text("""
+                INSERT INTO transactions (transaction_id, date, amount, description, risk, status)
+                VALUES (:transaction_id, :date, :amount, :description, :risk, :status)
+            """), {
+                "transaction_id": transaction_id,
+                "date": date,
+                "amount": amount,
+                "description": description,
+                "risk": risk,
+                "status": status
+            })
+            conn.commit()  # Commit the transaction
+            return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+    
+# -------------------- risk heatmap --------------------
+
 @app.route("/api/risk-data", methods=["GET"])
 def get_risk_data():
     try:
@@ -173,6 +207,34 @@ def get_risk_data():
     except Exception as e:
         return jsonify({"error": str(e)}), 500    
 
+
+# -------------------- counts for every box--------------------
+
+@app.route("/api/get-counts", methods=["GET"])
+def get_counts():
+    with engine.connect() as conn:
+        pending = conn.execute(text("SELECT COUNT(*) FROM transactions WHERE status = 'Pending'")).scalar()
+        rejected = conn.execute(text("SELECT COUNT(*) FROM transactions WHERE status = 'Rejected'")).scalar()
+        approved = conn.execute(text("SELECT COUNT(*) FROM transactions WHERE status = 'Approved'")).scalar()
+        high_risk = conn.execute(text("SELECT COUNT(*) FROM transactions WHERE risk = 'High'")).scalar()
+        medium_risk = conn.execute(text("SELECT COUNT(*) FROM transactions WHERE risk = 'Medium'")).scalar()
+        low_risk = conn.execute(text("SELECT COUNT(*) FROM transactions WHERE risk = 'Low'")).scalar()
+        present_year = conn.execute(text("SELECT COUNT(*) FROM transactions WHERE YEAR(date) = YEAR(CURDATE())")).scalar()
+        previous_year = conn.execute(text("SELECT COUNT(*) FROM transactions WHERE YEAR(date) = YEAR(CURDATE()) - 1")).scalar()
+        previous_to_previous_year = conn.execute(text("SELECT COUNT(*) FROM transactions WHERE YEAR(date) = YEAR(CURDATE()) - 2")).scalar()
+
+        return jsonify({
+            "pending": pending,
+            "rejected": rejected,
+            "approved": approved,
+            "high_risk": high_risk,
+            "medium_risk": medium_risk,
+            "low_risk": low_risk,
+            "present_year": present_year,
+            "previous_year": previous_year,
+            "previous_to_previous_year": previous_to_previous_year
+        })
+    
 # -------------------- Main --------------------
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
