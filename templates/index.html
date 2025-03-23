@@ -71,11 +71,102 @@
     .logout-button .btn:hover {
       background-color: #c82333; /* Darker red on hover */
     }
+
     /* Heatmap Container */
     #heatmap {
       width: 100%;
       height: 200px;
       position: relative;
+    }
+
+    /* Colored Bars */
+    .color-bar {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 10px;
+      border-radius: 2px;
+    }
+
+    .high {
+      background-color: #ff4d4d; /* Red for High risk */
+    }
+
+    .medium {
+      background-color: #ffa64d; /* Orange for Medium risk */
+    }
+
+    .low {
+      background-color: #4dff4d; /* Green for Low risk */
+    }
+
+    /* Hover Effect for Boxes */
+    
+    /* Hover Effect for Boxes */
+    .hover-box {
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      padding: 10px; /* Reduced padding */
+      text-align: center;
+      border-radius: 10px;
+      color: white;
+      height: 80px; /* Fixed height */
+      width: 175px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .hover-box:hover {
+      transform: scale(1.05); /* Increase size by 5% */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
+    }
+    .hover-box h5 {
+      font-size: 14px; /* Smaller heading */
+      margin: 0;
+    }
+
+    .hover-box h3 {
+      font-size: 25px; /* Smaller count */
+      margin: 5px 0 0;
+    }
+
+    /* Box Colors */
+    .pending-box {
+      background-color: #ffcc00; /* Yellow for Pending */
+    }
+
+    .rejected-box {
+      background-color: #ff6666; /* Red for Rejected */
+    }
+
+    .approved-box {
+      background-color: #66cc66; /* Green for Approved */
+    }
+
+    .high-risk-box {
+      background-color: #ff4d4d; /* Red for High Risk */
+    }
+
+    .medium-risk-box {
+      background-color: #ffa64d; /* Orange for Medium Risk */
+    }
+
+    .low-risk-box {
+      background-color: #4dff4d; /* Green for Low Risk */
+    }
+
+    .present-year-box {
+      background-color: #66ccff; /* Blue for Present Year */
+    }
+
+    .previous-year-box {
+      background-color: #9966ff; /* Purple for Previous Year */
+    }
+
+    .previous-to-previous-year-box {
+      background-color: #ff99cc; /* Pink for Previous to Previous Year */
     }
   </style>
 </head>
@@ -91,65 +182,8 @@
     </div>
 
     <div class="row mt-4">
-      <!-- Transactions -->
-      <div class="col-md-4 mb-4">
-        <div class="card p-3">
-          <h5>Transactions</h5>
-          <input type="text" class="form-control mb-2" placeholder="Filter transactions...">
-
-          <!-- Scrollable Section -->
-          <div class="scrollable-table">
-            <table class="table table-bordered table-sm">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Date</th>
-                  <th>Amount</th>
-                  <th>Description</th>
-                  <th>Risk</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="transaction-table-body">
-                {% for row in rows %}
-                <tr>
-                  <td>{{row['transaction_id']}}</td>
-                  <td>{{row['date']}}</td>
-                  <td>{{row['amount']}}</td>
-                  <td>{{row['description']}}</td>
-                  <td>{{row['risk']}}</td>
-                  <td>{{row['status']}}</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-          <!-- End Scrollable Section -->
-
-        </div>
-      </div>
-
-      <!-- Add Transaction -->
-      <div class="col-md-4 mb-4">
-        <div class="card p-3">
-          <h5>Add Transaction</h5>
-          <input type="text" class="form-control mb-2" placeholder="Transaction ID (e.g., TX2000)">
-          <input type="date" class="form-control mb-2">
-          <input type="number" class="form-control mb-2" placeholder="Amount">
-          <input type="text" class="form-control mb-2" placeholder="Description">
-          <select class="form-control mb-2">
-            <option>Low</option>
-            <option>Medium</option>
-            <option>High</option>
-          </select>
-          <select class="form-control mb-3">
-            <option>Approved</option>
-            <option>Pending</option>
-            <option>Rejected</option>
-          </select>
-          <button class="btn btn-primary w-100">Add Transaction</button>
-        </div>
-      </div>
+      {% include 'transaction.html' %}
+      {% include 'input_transactions.html' %}
 
       <!-- Heatmap -->
       <div class="col-md-4 mb-4">
@@ -157,6 +191,12 @@
           <h5>Risk Heatmap</h5>
           <div id="heatmap">
             <canvas id="riskHeatmap"></canvas> <!-- Canvas for Chart.js -->
+          </div>
+          <div id="risk-counts" class="mt-3">
+            <p><span class="color-bar high"></span>High: <span id="high-count">0</span></p>
+            <p><span class="color-bar medium"></span>Medium: <span id="medium-count">0</span></p>
+            <p><span class="color-bar low"></span>Low: <span id="low-count">0</span></p>
+            <p>Total: <span id="total-count">0</span></p>
           </div>
           <button class="btn btn-primary mt-3" onclick="updateHeatmap()">Generate Heatmap</button>
         </div>
@@ -181,82 +221,179 @@
         </div>
       </div>
 
-      <!-- Chartio Dashboard -->
+      <!-- Interactive Dashboard (Chartio) -->
       <div class="col-md-6 mb-4">
         <div class="card p-3">
           <h5>Interactive Dashboard (Chartio)</h5>
-          <div style="height: 250px; overflow: auto;">
-            <p class="text-danger fw-bold">Not Found</p>
-            <p>The requested URL was not found on the server. Please check your spelling and try again.</p>
+          <div class="row">
+            <!-- Pending -->
+            <div class="col-md-4 mb-4">
+              <div class="hover-box pending-box">
+                <h5>Pending</h5>
+                <h3 id="pending-count">0</h3>
+              </div>
+            </div>
+
+            <!-- Rejected -->
+            <div class="col-md-4 mb-4">
+              <div class="hover-box rejected-box">
+                <h5>Rejected</h5>
+                <h3 id="rejected-count">0</h3>
+              </div>
+            </div>
+
+            <!-- Approved -->
+            <div class="col-md-4 mb-4">
+              <div class="hover-box approved-box">
+                <h5>Approved</h5>
+                <h3 id="approved-count">0</h3>
+              </div>
+            </div>
+
+            <!-- High Risk -->
+            <div class="col-md-4 mb-4">
+              <div class="hover-box high-risk-box">
+                <h5>High Risk</h5>
+                <h3 id="high-risk-count">0</h3>
+              </div>
+            </div>
+
+            <!-- Medium Risk -->
+            <div class="col-md-4 mb-4">
+              <div class="hover-box medium-risk-box">
+                <h5>Medium Risk</h5>
+                <h3 id="medium-risk-count">0</h3>
+              </div>
+            </div>
+
+            <!-- Low Risk -->
+            <div class="col-md-4 mb-4">
+              <div class="hover-box low-risk-box">
+                <h5>Low Risk</h5>
+                <h3 id="low-risk-count">0</h3>
+              </div>
+            </div>
+
+            <!-- Present Year All Data -->
+            <div class="col-md-4 mb-4">
+              <div class="hover-box present-year-box">
+                <h5>Present Year</h5>
+                <h3 id="present-year-count">0</h3>
+              </div>
+            </div>
+
+            <!-- Previous Year All Data -->
+            <div class="col-md-4 mb-4">
+              <div class="hover-box previous-year-box">
+                <h5>Previous Year</h5>
+                <h3 id="previous-year-count">0</h3>
+              </div>
+            </div>
+
+            <!-- Previous to Previous Year All Data -->
+            <div class="col-md-4 mb-4">
+              <div class="hover-box previous-to-previous-year-box">
+                <h5>Previous to Previous Year</h5>
+                <h3 id="previous-to-previous-year-count">0</h3>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-{% include 'chatbot.html' %}
-<script>
-  // Initialize Chart.js
-  let riskHeatmapChart;
+  {% include 'chatbot.html' %}
+  <script>
+    // Initialize Chart.js
+    let riskHeatmapChart;
 
-  // Function to fetch risk data and update the heatmap
-  function updateHeatmap() {
-    console.log("Fetching risk data..."); // Debugging
-    fetch("/api/risk-data")
-      .then(response => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.json();
-      })
-      .then(data => {
-        console.log("Risk data received:", data); // Debugging
-        const ctx = document.getElementById('riskHeatmap').getContext('2d');
+    // Function to fetch risk data and update the heatmap
+    function updateHeatmap() {
+      console.log("Fetching risk data..."); // Debugging
+      fetch("/api/risk-data")
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log("Risk data received:", data); // Debugging
+          const ctx = document.getElementById('riskHeatmap').getContext('2d');
 
-        // Destroy existing chart if it exists
-        if (riskHeatmapChart) {
-          riskHeatmapChart.destroy();
-        }
+          // Destroy existing chart if it exists
+          if (riskHeatmapChart) {
+            riskHeatmapChart.destroy();
+          }
 
-        // Create new chart
-        riskHeatmapChart = new Chart(ctx, {
-          type: 'doughnut',
-          data: {
-            labels: ['High', 'Medium', 'Low'],
-            datasets: [{
-              label: 'Risk Distribution',
-              data: [data.high, data.medium, data.low],
-              backgroundColor: [
-                '#ff4d4d', // High risk color
-                '#ffa64d', // Medium risk color
-                '#4dff4d', // Low risk color
-              ],
-              borderWidth: 1,
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: 'bottom',
-              },
-              tooltip: {
-                enabled: true,
+          // Create new chart
+          riskHeatmapChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+              labels: ['High', 'Medium', 'Low'],
+              datasets: [{
+                label: 'Risk Distribution',
+                data: [data.high, data.medium, data.low],
+                backgroundColor: [
+                  '#ff4d4d', // High risk color
+                  '#ffa64d', // Medium risk color
+                  '#4dff4d', // Low risk color
+                ],
+                borderWidth: 1,
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: false, // Disable the legend
+                },
+                tooltip: {
+                  enabled: true,
+                }
               }
             }
-          }
+          });
+
+          // Update the risk counts
+          document.getElementById('high-count').textContent = data.high;
+          document.getElementById('medium-count').textContent = data.medium;
+          document.getElementById('low-count').textContent = data.low;
+          document.getElementById('total-count').textContent = data.high + data.medium + data.low;
+        })
+        .catch(error => {
+          console.error("Error fetching risk data:", error); // Debugging
         });
-      })
-      .catch(error => {
-        console.error("Error fetching risk data:", error); // Debugging
-      });
-  }
+    }
 
-  // Initial heatmap load
-  updateHeatmap();
-</script>
+    // Function to fetch and update counts for the 9 boxes
+    function updateCounts() {
+      fetch('/api/get-counts')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('pending-count').textContent = data.pending;
+          document.getElementById('rejected-count').textContent = data.rejected;
+          document.getElementById('approved-count').textContent = data.approved;
+          document.getElementById('high-risk-count').textContent = data.high_risk;
+          document.getElementById('medium-risk-count').textContent = data.medium_risk;
+          document.getElementById('low-risk-count').textContent = data.low_risk;
+          document.getElementById('present-year-count').textContent = data.present_year;
+          document.getElementById('previous-year-count').textContent = data.previous_year;
+          document.getElementById('previous-to-previous-year-count').textContent = data.previous_to_previous_year;
+        })
+        .catch(error => {
+          console.error('Error fetching counts:', error);
+        });
+    }
 
+    // Initial heatmap load
+    updateHeatmap();
+
+    // Initial load of counts
+    updateCounts();
+  </script>
 </body>
 
 </html>
